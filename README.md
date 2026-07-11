@@ -1,18 +1,18 @@
 # LiteLLM Proxy for Bootcamp Students
 
-This project provides a lightweight, classroom-safe API proxy powered by LiteLLM. It exposes a single model alias, `class-chat-model`, which routes to Groq's `llama3-8b-8192` model through the LiteLLM proxy server.
+This project provides a lightweight, classroom-safe API proxy powered by LiteLLM. It exposes a single model alias, `class-chat-model`, which routes to Google's Gemini `gemini-flash-lite-latest` model through the LiteLLM proxy server.
 
 ## Features
 
 - Uses the built-in LiteLLM proxy server
 - Protects access with a master key
-- Reads the real Groq API key from a `.env` file
+- Reads the real Gemini API key from a `.env` file
 - Works well for frontend JavaScript apps using `fetch()`
 
 ## 1. Prerequisites
 
 - Python 3.10+
-- A Groq API key
+- A Gemini API key
 - Optional: Docker for container deployment
 
 ## 2. Setup locally
@@ -36,10 +36,10 @@ This project provides a lightweight, classroom-safe API proxy powered by LiteLLM
    cp .env.example .env
    ```
 
-4. Edit `.env` and add your real Groq API key:
+4. Edit `.env` and add your real Gemini API key:
 
    ```env
-   GROQ_API_KEY=your_real_groq_api_key_here
+   GEMINI_API_KEY=your_real_gemini_api_key_here
    ```
 
 ## 3. Run the proxy
@@ -91,7 +91,22 @@ const data = await response.json();
 console.log(data);
 ```
 
-## 6. Docker deployment
+## 6. GitHub Pages frontend demo
+
+Students can open the included [index.html](index.html) file directly in a browser, or host the repository on GitHub Pages.
+
+Before using the app, replace the placeholder URL in [index.html](index.html) with your deployed Render or Railway proxy URL:
+
+```javascript
+https://YOUR_RENDER_PROXY_URL/v1/chat/completions
+```
+
+Then the app will send requests using:
+
+- the shared master key: `sk-vibe-summer-2026`
+- the shared model alias: `class-chat-model`
+
+## 7. Docker deployment
 
 Build the image:
 

@@ -1,7 +1,7 @@
 model_list:
   - model_name: class-chat-model
     litellm_params:
-      model: gemini/gemini-flash-lite-latest
+      model: gemini/gemini-3.1-flash-lite
       api_key: os.environ/GEMINI_API_KEY
 
 general_settings:
