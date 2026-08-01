@@ -6,7 +6,7 @@ model_list:
 
   - model_name: class-image-model
     litellm_params:
-      model: gemini/imagen-4.0-generate-001
+      model: gemini/gemini-2.5-flash-image
       api_key: os.environ/GEMINI_API_KEY
     model_info:
       mode: image_generation
