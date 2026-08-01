@@ -264,20 +264,30 @@
 
     // === TEACHER'S MAGIC CODE — Video generation ===
     async function generateVideo(prompt) {
+      // Step 1: submit the job
       const res = await fetch(`${PROXY_URL}/v1/videos`, {
         method: 'POST',
         headers: { 'Content-Type': 'application/json', 'Authorization': AUTH },
-        body: JSON.stringify({
-          model: 'class-video-model',
-          prompt,
-          seconds: '8',
-          size: '1280x720'
-        })
+        body: JSON.stringify({ model: 'class-video-model', prompt })
       });
-      const data = await res.json();
-      const item = data.data?.[0];
-      if (!item) throw new Error('No video in response');
-      return item.url || `data:video/mp4;base64,${item.b64_video}`;
+      const job = await res.json();
+      if (!job.id) throw new Error('No job ID in response');
+
+      // Step 2: poll until done (max 3 minutes)
+      const deadline = Date.now() + 3 * 60 * 1000;
+      while (Date.now() < deadline) {
+        await new Promise(r => setTimeout(r, 5000));
+        const poll = await fetch(`${PROXY_URL}/v1/videos/${job.id}`, {
+          headers: { 'Authorization': AUTH }
+        });
+        const status = await poll.json();
+        if (status.status === 'completed') {
+          // Step 3: fetch the video content URL
+          return `${PROXY_URL}/v1/videos/${job.id}/content`;
+        }
+        if (status.status === 'failed') throw new Error(status.error || 'Video generation failed');
+      }
+      throw new Error('Timed out waiting for video');
     }
 
     // === KIDS UI CODE — Chat ===
@@ -349,7 +359,7 @@
       if (!prompt) return;
       const result = document.getElementById('videoResult');
       const btn    = document.getElementById('videoSendBtn');
-      result.innerHTML = '<span class="media-placeholder">Generating your video... this takes ~30 seconds 🎬</span>';
+      result.innerHTML = '<span class="media-placeholder">Generating your video... checking every 5 seconds, up to 3 minutes 🎬</span>';
       btn.disabled = true;
       try {
         const src = await generateVideo(prompt);
