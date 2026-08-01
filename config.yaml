@@ -4,5 +4,19 @@ model_list:
       model: gemini/gemini-3.1-flash-lite
       api_key: os.environ/GEMINI_API_KEY
 
+  - model_name: class-image-model
+    litellm_params:
+      model: gemini/imagen-4.0-generate-001
+      api_key: os.environ/GEMINI_API_KEY
+    model_info:
+      mode: image_generation
+
+  - model_name: class-video-model
+    litellm_params:
+      model: gemini/veo-3.0-generate-preview
+      api_key: os.environ/GEMINI_API_KEY
+    model_info:
+      mode: video_generation
+
 general_settings:
   master_key: sk-vibe-summer-2026
