@@ -91,6 +91,55 @@ const data = await response.json();
 console.log(data);
 ```
 
+## 5a. Image generation usage
+
+Generate an image from a text prompt using `class-image-model` (powered by Imagen 4):
+
+```javascript
+const response = await fetch('https://vibe-proxy-gqv4.onrender.com/v1/images/generations', {
+  method: 'POST',
+  headers: {
+    'Authorization': 'Bearer sk-vibe-summer-2026',
+    'Content-Type': 'application/json'
+  },
+  body: JSON.stringify({
+    model: 'class-image-model',
+    prompt: 'A cartoon robot reading a book in a cozy library',
+    n: 1,
+    size: '1024x1024'
+  })
+});
+
+const data = await response.json();
+// Response contains either a URL or base64-encoded image
+const imgSrc = data.data[0].url || `data:image/png;base64,${data.data[0].b64_json}`;
+```
+
+## 5b. Video generation usage
+
+Generate a short video from a text prompt using `class-video-model` (powered by Veo 3). Expect ~30 seconds generation time:
+
+```javascript
+const response = await fetch('https://vibe-proxy-gqv4.onrender.com/v1/videos/generations', {
+  method: 'POST',
+  headers: {
+    'Authorization': 'Bearer sk-vibe-summer-2026',
+    'Content-Type': 'application/json'
+  },
+  body: JSON.stringify({
+    model: 'class-video-model',
+    prompt: 'A time-lapse of clouds moving over mountains at sunset',
+    seconds: '8',
+    size: '1280x720'
+  })
+});
+
+const data = await response.json();
+const videoSrc = data.data[0].url || `data:video/mp4;base64,${data.data[0].b64_video}`;
+```
+
+> All three models — chat, image, and video — use the same `GEMINI_API_KEY`. No extra credentials required.
+
 ## 6. GitHub Pages frontend demo
 
 Students can open the included [index.html](index.html) file directly in a browser, or host the repository on GitHub Pages.
