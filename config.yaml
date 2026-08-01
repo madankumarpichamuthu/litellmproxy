@@ -13,7 +13,7 @@ model_list:
 
   - model_name: class-video-model
     litellm_params:
-      model: gemini/veo-3.0-generate-preview
+      model: gemini/veo-3.1-generate-preview
       api_key: os.environ/GEMINI_API_KEY
     model_info:
       mode: video_generation

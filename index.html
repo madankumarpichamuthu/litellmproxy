@@ -264,7 +264,7 @@
 
     // === TEACHER'S MAGIC CODE — Video generation ===
     async function generateVideo(prompt) {
-      const res = await fetch(`${PROXY_URL}/v1/videos/generations`, {
+      const res = await fetch(`${PROXY_URL}/v1/videos`, {
         method: 'POST',
         headers: { 'Content-Type': 'application/json', 'Authorization': AUTH },
         body: JSON.stringify({

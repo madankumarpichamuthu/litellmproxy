@@ -120,7 +120,7 @@ const imgSrc = data.data[0].url || `data:image/png;base64,${data.data[0].b64_jso
 Generate a short video from a text prompt using `class-video-model` (powered by Veo 3). Expect ~30 seconds generation time:
 
 ```javascript
-const response = await fetch('https://vibe-proxy-gqv4.onrender.com/v1/videos/generations', {
+const response = await fetch('https://vibe-proxy-gqv4.onrender.com/v1/videos', {
   method: 'POST',
   headers: {
     'Authorization': 'Bearer sk-vibe-summer-2026',
