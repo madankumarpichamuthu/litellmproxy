@@ -342,7 +342,7 @@
       const res = await fetch(`${PROXY_URL}/v1/videos`, {
         method: 'POST',
         headers: { 'Content-Type': 'application/json', 'Authorization': AUTH },
-        body: JSON.stringify({ model: 'class-video-model', prompt })
+        body: JSON.stringify({ model: 'class-video-model', prompt, seconds: '4' })
       });
       const job = await res.json();
       if (!job.id) throw new Error('No job ID in response');
