@@ -125,6 +125,80 @@
       text-align: center;
     }
 
+    /* Video progress */
+    .video-status {
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      gap: 12px;
+      width: 100%;
+      padding: 16px 0;
+    }
+    .video-status-text {
+      color: var(--muted);
+      font-size: 0.95rem;
+    }
+    .progress-bar-track {
+      width: 100%;
+      max-width: 480px;
+      height: 8px;
+      background: #1f2937;
+      border-radius: 999px;
+      overflow: hidden;
+    }
+    .progress-bar-fill {
+      height: 100%;
+      border-radius: 999px;
+      background: linear-gradient(90deg, var(--accent), var(--accent-2));
+      width: 0%;
+      transition: width 1s linear;
+    }
+    .job-id-row {
+      display: flex;
+      align-items: center;
+      gap: 8px;
+      font-size: 0.78rem;
+      color: var(--muted);
+      word-break: break-all;
+      max-width: 480px;
+    }
+    .job-id-row code {
+      background: #1f2937;
+      padding: 2px 6px;
+      border-radius: 4px;
+      font-size: 0.75rem;
+      max-width: 360px;
+      overflow: hidden;
+      text-overflow: ellipsis;
+      white-space: nowrap;
+      display: inline-block;
+    }
+    .copy-btn {
+      border: 1px solid rgba(255,255,255,0.2);
+      background: none;
+      color: var(--muted);
+      border-radius: 6px;
+      padding: 2px 8px;
+      font-size: 0.75rem;
+      cursor: pointer;
+      white-space: nowrap;
+    }
+    .copy-btn:hover { color: var(--text); border-color: var(--accent); }
+    .download-btn {
+      margin-top: 8px;
+      border: 0;
+      padding: 10px 20px;
+      border-radius: 999px;
+      background: linear-gradient(90deg, var(--accent), var(--accent-2));
+      color: white;
+      font-weight: 700;
+      cursor: pointer;
+      font-size: 0.95rem;
+      text-decoration: none;
+      display: inline-block;
+    }
+    .download-btn:hover { transform: translateY(-1px); }
+
     /* Shared composer */
     .composer {
       display: flex;
@@ -263,7 +337,7 @@
     }
 
     // === TEACHER'S MAGIC CODE — Video generation ===
-    async function generateVideo(prompt) {
+    async function generateVideo(prompt, onJobId, onProgress) {
       // Step 1: submit the job
       const res = await fetch(`${PROXY_URL}/v1/videos`, {
         method: 'POST',
@@ -272,18 +346,25 @@
       });
       const job = await res.json();
       if (!job.id) throw new Error('No job ID in response');
+      onJobId(job.id);
 
       // Step 2: poll until done (max 3 minutes)
-      const deadline = Date.now() + 3 * 60 * 1000;
-      while (Date.now() < deadline) {
+      const maxMs = 3 * 60 * 1000;
+      const start = Date.now();
+      while (Date.now() - start < maxMs) {
         await new Promise(r => setTimeout(r, 5000));
+        onProgress(Math.min(95, ((Date.now() - start) / maxMs) * 100));
         const poll = await fetch(`${PROXY_URL}/v1/videos/${job.id}`, {
           headers: { 'Authorization': AUTH }
         });
         const status = await poll.json();
         if (status.status === 'completed') {
-          // Step 3: fetch the video content URL
-          return `${PROXY_URL}/v1/videos/${job.id}/content`;
+          // Fetch video bytes with auth header and return a blob URL
+          const content = await fetch(`${PROXY_URL}/v1/videos/${job.id}/content`, {
+            headers: { 'Authorization': AUTH }
+          });
+          const blob = await content.blob();
+          return URL.createObjectURL(blob);
         }
         if (status.status === 'failed') throw new Error(status.error || 'Video generation failed');
       }
@@ -359,10 +440,39 @@
       if (!prompt) return;
       const result = document.getElementById('videoResult');
       const btn    = document.getElementById('videoSendBtn');
-      result.innerHTML = '<span class="media-placeholder">Generating your video... checking every 5 seconds, up to 3 minutes 🎬</span>';
       btn.disabled = true;
+
+      // Show progress UI
+      result.innerHTML = `
+        <div class="video-status">
+          <div class="video-status-text">Submitting your video request... 🎬</div>
+          <div class="progress-bar-track"><div class="progress-bar-fill" id="progressFill"></div></div>
+          <div class="job-id-row" id="jobIdRow" style="display:none">
+            Job ID: <code id="jobIdText"></code>
+            <button class="copy-btn" id="copyJobBtn">Copy</button>
+          </div>
+        </div>`;
+
+      function onJobId(id) {
+        document.querySelector('.video-status-text').textContent = 'Generating... checking every 5 seconds, up to 3 minutes 🎬';
+        const row = document.getElementById('jobIdRow');
+        document.getElementById('jobIdText').textContent = id;
+        row.style.display = 'flex';
+        document.getElementById('copyJobBtn').addEventListener('click', () => {
+          navigator.clipboard.writeText(id);
+          document.getElementById('copyJobBtn').textContent = 'Copied!';
+        });
+      }
+
+      function onProgress(pct) {
+        const fill = document.getElementById('progressFill');
+        if (fill) fill.style.width = `${pct}%`;
+        const txt = document.querySelector('.video-status-text');
+        if (txt) txt.textContent = `Generating... ${Math.round(pct)}% — do not refresh! 🎬`;
+      }
+
       try {
-        const src = await generateVideo(prompt);
+        const src = await generateVideo(prompt, onJobId, onProgress);
         result.innerHTML = '';
         const vid = document.createElement('video');
         vid.src      = src;
@@ -371,6 +481,13 @@
         vid.loop     = true;
         vid.style.maxWidth = '100%';
         result.appendChild(vid);
+        // Download button (blob URL works directly for download)
+        const dl = document.createElement('a');
+        dl.href      = src;
+        dl.download  = 'my-video.mp4';
+        dl.className = 'download-btn';
+        dl.textContent = '⬇️ Download Video';
+        result.appendChild(dl);
       } catch (err) {
         result.innerHTML = '<span class="media-placeholder">Something went wrong. Check the proxy and try again.</span>';
         console.error(err);
