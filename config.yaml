@@ -4,19 +4,22 @@ model_list:
       model: gemini/gemini-3.1-flash-lite
       api_key: os.environ/GEMINI_API_KEY
 
-  - model_name: class-image-model
-    litellm_params:
-      model: gemini/gemini-2.5-flash-image
-      api_key: os.environ/GEMINI_API_KEY
-    model_info:
-      mode: image_generation
-
-  - model_name: class-video-model
-    litellm_params:
-      model: gemini/veo-3.1-lite-generate-preview
-      api_key: os.environ/GEMINI_API_KEY
-    model_info:
-      mode: video_generation
+  # class-image-model and class-video-model are disabled to control costs.
+  # Uncomment to re-enable:
+  #
+  # - model_name: class-image-model
+  #   litellm_params:
+  #     model: gemini/gemini-2.5-flash-image
+  #     api_key: os.environ/GEMINI_API_KEY
+  #   model_info:
+  #     mode: image_generation
+  #
+  # - model_name: class-video-model
+  #   litellm_params:
+  #     model: gemini/veo-3.1-lite-generate-preview
+  #     api_key: os.environ/GEMINI_API_KEY
+  #   model_info:
+  #     mode: video_generation
 
 general_settings:
   master_key: sk-vibe-summer-2026
